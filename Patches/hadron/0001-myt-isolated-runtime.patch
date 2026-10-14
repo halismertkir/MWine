@@ -1,0 +1,93 @@
+diff --git a/scripts/paths.sh b/scripts/paths.sh
+index 1be727d..604951d 100644
+--- a/scripts/paths.sh
++++ b/scripts/paths.sh
+@@ -12,6 +12,15 @@ else
+     HADRON_VALVE="$HOME/Library/Application Support/Hadron/valve/bridge"
+     HADRON_PREFIX="$HOME/Library/Application Support/Hadron/prefix"
+ fi
++# Downstream integration can keep all mutable data outside the signed runtime.
++# Wine's loader/provisioning profile and graphics binaries remain untouched.
++HADRON_APPS="$HOME/Library/Application Support/Hadron/apps"
++if [ -n "${HADRON_DATA_ROOT:-}" ]; then
++    HADRON_LOGS="$HADRON_DATA_ROOT/logs"
++    HADRON_VALVE="$HADRON_DATA_ROOT/valve/bridge"
++    HADRON_PREFIX="$HADRON_DATA_ROOT/prefix"
++    HADRON_APPS="$HADRON_DATA_ROOT/apps"
++fi
+ # The libraries Wine opens by name (FreeType, GnuTLS, SDL, the Vulkan loader): the runtime's own
+ # copies when it carries them, Homebrew's in a checkout.
+ if [ -d "$ROOT/dist/ext/lib" ]; then
+diff --git a/scripts/play b/scripts/play
+index b0a330d..f059b3a 100755
+--- a/scripts/play
++++ b/scripts/play
+@@ -108,7 +108,7 @@ if [ "${HADRON_WATCHDOG:-1}" != 0 ]; then
+     # $$ is this script's PID, which the exec below hands to Wine.
+     nohup "$ROOT/scripts/watchdog" "$memlog" $$ >/dev/null 2>&1 &
+ fi
+-if [ -n "$HADRON_LOG" ]; then
++if [ -n "$HADRON_LOG" ] && [ "${HADRON_STREAM_LOGS:-0}" != 1 ]; then
+     log="$HADRON_LOGS/$appid-$(date +%Y%m%d-%H%M%S).log"
+     echo "logging to $log" >&2
+     debug="${WINEDEBUG:-err+all,+loaddll}"
+@@ -123,11 +123,13 @@ fi
+ # marks the game's minimized windows with it.
+ name=$(printf '%s' "${HADRON_APP_NAME:-$(basename "$exe" .exe)}" | tr -d '/:<>&\n' | cut -c1-80)
+ name="${name:-game}"
++bundle_prefix="${HADRON_GAME_BUNDLE_PREFIX:-com.broyojo.hadron.game}"
++case "$bundle_prefix" in *[!A-Za-z0-9.-]*|"") echo "invalid game bundle prefix" >&2; exit 2 ;; esac
+ loader=$(/bin/realpath "$ROOT/dist/bin/wine")
+-app="$HOME/Library/Application Support/Hadron/apps/$appid/$name.app"
++app="$HADRON_APPS/$appid/$name.app"
+ wine="$app/Contents/MacOS/$name"
+ if [ "$(readlink "$wine" 2>/dev/null)" != "$loader" ] || ! grep -q CFBundleIconFile "$app/Contents/Info.plist" 2>/dev/null; then
+-    rm -rf "$HOME/Library/Application Support/Hadron/apps/$appid"
++    rm -rf "$HADRON_APPS/$appid"
+     mkdir -p "$app/Contents/MacOS" "$app/Contents/Resources" && ln -s "$loader" "$wine" && cat > "$app/Contents/Info.plist" <<EOF
+ <?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+@@ -138,7 +140,7 @@ if [ "$(readlink "$wine" 2>/dev/null)" != "$loader" ] || ! grep -q CFBundleIconF
+     <key>CFBundleIconFile</key>
+     <string>icon</string>
+     <key>CFBundleIdentifier</key>
+-    <string>com.broyojo.hadron.game.$appid</string>
++    <string>$bundle_prefix.$appid</string>
+     <key>CFBundleName</key>
+     <string>$name</string>
+     <key>CFBundlePackageType</key>
+diff --git a/scripts/steam-run b/scripts/steam-run
+index e7905dd..3895086 100755
+--- a/scripts/steam-run
++++ b/scripts/steam-run
+@@ -45,7 +45,7 @@ apply_profile() {  # <file>
+         done
+     done < "$1"
+ }
+-apply_profile "$HOME/Library/Application Support/Hadron/games.conf"
++apply_profile "${HADRON_DATA_ROOT:-$HOME/Library/Application Support/Hadron}/games.conf"
+ apply_profile "$ROOT/config/games.conf"
+ 
+ log="$STEAM_COMPAT_DATA_PATH/hadron-run.log"
+@@ -178,6 +178,10 @@ if [ -d "$valve/legacycompat" ] && [ -n "$STEAM_COMPAT_CLIENT_INSTALL_PATH" ]; t
+     done
+ fi
+ 
++# Let an integration restore saves after the Wine/Steam profile is ready,
++# before the game can create or overwrite its own defaults.
++[ "${HADRON_PREPARE_ONLY:-0}" = 1 ] && exit 0
++
+ program="$1"
+ install_path="${STEAM_COMPAT_INSTALL_PATH%/}"
+ case "$program" in
+@@ -209,8 +213,10 @@ export HADRON_LOG="${HADRON_LOG:-1}"
+ trap '"$wineserver" -k; wait; exit 143' TERM INT HUP
+ "$ROOT/scripts/play" "${STEAM_COMPAT_APP_ID:-${SteamAppId:-0}}" "$program" "$@" &
+ wait $!
++game_status=$?
+ # A launcher that starts the real game and exits returns early: stay until the prefix's whole Wine
+ # session has ended, so Steam shows the game running (and can stop it) until then. Waited on in the
+ # background, so Stop's SIGTERM still interrupts.
+ "$wineserver" -w &
+ wait $!
++exit "$game_status"

@@ -1,0 +1,23 @@
+# Never publish downloaded engines, games, account data or personal diagnostics.
+runtime/
+downloads/
+bottles/
+logs/
+build/
+tools/
+backups/
+preserved-data/
+engine-sources/
+cleanup-result.json
+CLEANUP.md
+VERIFICATION.md
+PERFORMANCE-BASELINE.md
+MYT-PLAN.md
+NATIVE-ENGINE.md
+.DS_Store
+__pycache__/
+*.pyc
+*.part
+*.dmg
+*.trace
+*.xcarchive

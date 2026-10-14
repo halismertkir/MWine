@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "upstream": "https://github.com/Broyojo/hadron",
+  "tag": "v0.1.1",
+  "commit": "3e7043aa4264aab9d598ff6d52d49ac53d0fca00",
+  "releaseAsset": "Hadron-0.1.1.dmg",
+  "sha256": "e464eb9f3e0511cd4bea6f1461fae8608ad989a966c59f48012f949445ff5524",
+  "cpuHost": "arm64",
+  "guestTranslation": "FEX ARM64EC and WoW64",
+  "minimumMacOSMajor": 27,
+  "downstreamPatch": "Patches/hadron/0001-myt-isolated-runtime.patch",
+  "steamBinaryPatched": false,
+  "signaturePolicy": "Keep upstream Wine loader, provisioning profile and signed app unchanged",
+  "claims": "Runtime probes only; no universal game compatibility or game FPS gain proven"
+}

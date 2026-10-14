@@ -1,0 +1,26 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+WORK="$(mktemp -d /private/tmp/mwine-tests.XXXXXX)"
+trap 'rm -rf "$WORK"' EXIT
+export PYTHONDONTWRITEBYTECODE=1
+for TEST in SteamDepot Runtime ProcessLog GameFiles; do
+  case "$TEST" in
+    SteamDepot) FILES=(SteamDepot) ;;
+    Runtime) FILES=(SteamDepot Runtime) ;;
+    ProcessLog) FILES=(BoundedProcessLog) ;;
+    GameFiles) FILES=(SteamDepot GameFiles) ;;
+  esac
+  ARGS=()
+  for FILE in "${FILES[@]}"; do ARGS+=("$ROOT/Sources/$FILE.swift"); done
+  swiftc -parse-as-library -module-cache-path "$WORK/modules" "${ARGS[@]}" "$ROOT/Tests/${TEST}Tests.swift" -o "$WORK/$TEST"
+  "$WORK/$TEST"
+done
+python3 "$ROOT/Tests/SaveRestoreTests.py"
+python3 "$ROOT/Tests/RunnerExitTests.py"
+python3 "$ROOT/Tests/SessionGuardTests.py"
+for SCRIPT in "$ROOT"/scripts/*; do
+  [[ -f "$SCRIPT" ]] || continue
+  if [[ "$(head -n 1 "$SCRIPT")" == '#!/bin/bash' ]]; then bash -n "$SCRIPT"; fi
+done

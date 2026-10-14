@@ -1,0 +1,27 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+STARTED="${1:-$(date +%s)}"
+export WINEPREFIX="$ROOT/bottles/steam"
+export WINEDEBUG=-all
+WINE="$ROOT/runtime/Wine Staging.app/Contents/Resources/wine/bin/wine"
+BOOT="$WINEPREFIX/drive_c/Program Files (x86)/Steam/logs/bootstrap_log.txt"
+WRAPPER="$ROOT/build/steamwebhelper-mwine.exe"
+TARGET="$WINEPREFIX/drive_c/Program Files (x86)/Steam/bin/cef/cef.win64/steamwebhelper.exe"
+# Steam may restore its helper during startup verification. Repair afterwards,
+# retaining Steam's integrity checks and its original signed binary.
+for ((attempt=0; attempt<60; attempt++)); do
+  if [[ -f "$BOOT" ]] && [[ "$(stat -f %m "$BOOT")" -ge "$STARTED" ]] && tail -18 "$BOOT" | /usr/bin/grep -q 'Verification complete'; then
+    if ! cmp -s "$WRAPPER" "$TARGET"; then
+      "$ROOT/scripts/patch-cef"
+      "$WINE" taskkill /IM steamwebhelper.exe /F || true
+    fi
+    exit 0
+  fi
+  # A request to an already-running Steam instance does not trigger verification.
+  if [[ "$attempt" -ge 10 ]] && cmp -s "$WRAPPER" "$TARGET"; then exit 0; fi
+  sleep 1
+done
+printf 'Steam başlangıcı 60 saniye içinde doğrulanamadı.\n' >&2
+exit 1

@@ -1,0 +1,17 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ENGINE="$ROOT/runtime/Wine Staging.app/Contents/Resources/wine"
+if [[ ! -x "$ENGINE/bin/wine" ]]; then bash "$ROOT/scripts/setup-runtime"; fi
+export WINEPREFIX="$ROOT/bottles/steam" WINEARCH=win64 WINEDEBUG=-all
+mkdir -p "$WINEPREFIX"
+if [[ ! -f "$WINEPREFIX/system.reg" ]]; then "$ENGINE/bin/wine" wineboot -i; fi
+python3 "$ROOT/scripts/restore-saves.py" "$ROOT" 5165210 "$WINEPREFIX" "${USER:-mert}"
+HOST="$ROOT/build/Find The Needle — MYT.app"
+mkdir -p "$HOST/Contents/MacOS"
+cp "$ENGINE/bin/wine" "$HOST/Contents/MacOS/wine"
+ln -sfn "$ENGINE/lib" "$HOST/Contents/lib"
+ln -sfn "$ENGINE/share" "$HOST/Contents/share"
+cp "$ROOT/Sources/GameHostInfo.plist" "$HOST/Contents/Info.plist"
+codesign --force --sign - "$HOST"

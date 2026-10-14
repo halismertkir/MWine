@@ -1,0 +1,22 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+mkdir -p runtime downloads logs
+ARCHIVE=downloads/wine-staging-11.18-osx64.tar.xz
+EXPECTED=b63704b91af269bc026a87f12bd297c4a50caaf570c322e600b6621ef918f127
+if [[ ! -f "$ARCHIVE" ]]; then
+  curl --fail --location --retry 2 'https://github.com/Gcenx/macOS_Wine_builds/releases/download/11.18/wine-staging-11.18-osx64.tar.xz' -o "$ARCHIVE.part"
+  mv "$ARCHIVE.part" "$ARCHIVE"
+fi
+ACTUAL="$(shasum -a 256 "$ARCHIVE" | cut -d ' ' -f 1)"
+[[ "$ACTUAL" == "$EXPECTED" ]] || { printf 'Wine paketinin SHA-256 doğrulaması başarısız.\n' >&2; exit 1; }
+if [[ ! -x 'runtime/Wine Staging.app/Contents/Resources/wine/bin/wine' ]]; then
+  tar -xJf "$ARCHIVE" -C runtime
+fi
+if [[ ! -f downloads/SteamSetup.exe ]]; then
+  curl --fail --location --retry 2 'https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe' -o downloads/SteamSetup.exe.part
+  mv downloads/SteamSetup.exe.part downloads/SteamSetup.exe
+fi
+printf 'Wine paketi doğrulandı. Windows Steam kurucusu hazır.\n'

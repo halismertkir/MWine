@@ -1,0 +1,50 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+[[ $# -ge 2 && "$1" =~ ^[0-9]+$ && -f "$2" ]] || { printf 'Oyun kimliği ve Windows dosyası gerekiyor.\n' >&2; exit 2; }
+GAME_ID="$1"
+EXE="$2"
+shift 2
+RUNTIME="$(cd "$ROOT/runtime/native-arm64/myt-runner-current" && pwd -P)"
+[[ -x "$RUNTIME/dist/bin/wine" ]] || { printf 'Yerel ARM64 motoru eksik.\n' >&2; exit 1; }
+export STEAM_COMPAT_DATA_PATH="$ROOT/bottles/native-arm64/$GAME_ID"
+export STEAM_COMPAT_APP_ID="$GAME_ID"
+export STEAM_COMPAT_INSTALL_PATH="$(cd "$(dirname "$EXE")" && pwd)"
+export WINEDEBUG=-all FEX_DISKCACHE=1
+export HADRON_DATA_ROOT="$ROOT/bottles/native-arm64/state"
+export HADRON_STREAM_LOGS=1 HADRON_WATCHDOG=0
+export HADRON_GAME_BUNDLE_PREFIX=local.myt.native.game
+VALVE="$HADRON_DATA_ROOT/valve/bridge"
+UPSTREAM="$ROOT/runtime/native-arm64/Hadron-0.1.1.app/Contents/SharedSupport/runtime"
+bridge_valid() {
+  local KIND REL PACKAGE INNER HASH
+  while read -r KIND REL PACKAGE INNER HASH; do
+    [[ "$KIND" == file ]] || continue
+    [[ -f "$VALVE/$REL" ]] || return 1
+    [[ "$(shasum -a 256 "$VALVE/$REL" | cut -d ' ' -f 1)" == "$HASH" ]] || return 1
+  done < "$UPSTREAM/steam/valve-packages.manifest"
+}
+if ! bridge_valid; then
+  mkdir -p "$ROOT/downloads"
+  WORK="$(mktemp -d "$ROOT/downloads/valve-native.XXXXXX")"
+  trap 'rm -rf "$WORK"' EXIT
+  BRIDGE_DIR="$VALVE" WORK="$WORK" MANIFEST="$UPSTREAM/steam/valve-packages.manifest" \
+    sh "$UPSTREAM/steam/fetch-valve.sh" --install
+  rm -rf "$WORK"
+  trap - EXIT
+fi
+mkdir -p "$ROOT/logs/native/$GAME_ID"
+cd "$STEAM_COMPAT_INSTALL_PATH"
+# Prepare the Windows user profile before restoring saves. Never restore old
+# x86 Wine system DLLs/registry into an ARM64 prefix.
+HADRON_PREPARE_ONLY=1 "$RUNTIME/scripts/steam-run" run "$EXE" "$@"
+if [[ -d "$ROOT/preserved-data" ]]; then
+  python3 "$ROOT/scripts/restore-saves.py" "$ROOT" "$GAME_ID" "$STEAM_COMPAT_DATA_PATH/pfx"
+fi
+# Upstream's runner creates ARM64EC/WoW64 prefixes, stages the Steam bridge, and
+# launches through scripts/play (including its memory watchdog).
+# Never call steam-install: the user's Mac Steam binary and signature stay intact.
+# Use a prefix-scoped guard rather than upstream's all-prefix stop script.
+"$ROOT/scripts/session-watchdog" "$STEAM_COMPAT_DATA_PATH/pfx" $$ "$RUNTIME/dist/bin/wineserver" &
+exec "$RUNTIME/scripts/steam-run" run "$EXE" "$@"

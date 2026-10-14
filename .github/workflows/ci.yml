@@ -1,0 +1,21 @@
+name: macOS source checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Offline tests
+        run: ./scripts/test
+      - name: Build portable launcher
+        run: ./scripts/build-app
+      - name: Verify app signature and resource isolation
+        run: |
+          codesign --verify --deep --strict build/MWine.app
+          test ! -e build/MWine.app/Contents/Resources/project-root.txt
+          test ! -e build/MWine.app/Contents/Resources/payload/runtime

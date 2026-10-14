@@ -1,0 +1,60 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+VERSION=0.1.1
+APP="$ROOT/runtime/native-arm64/Hadron-$VERSION.app"
+RUNTIME="$APP/Contents/SharedSupport/runtime"
+EXPECTED=e464eb9f3e0511cd4bea6f1461fae8608ad989a966c59f48012f949445ff5524
+ARCHIVE="$ROOT/downloads/Hadron-$VERSION.dmg"
+[[ "$(uname -m)" == arm64 ]] || { printf 'Yerel motor Apple Silicon gerektirir.\n' >&2; exit 1; }
+MAJOR="$(sw_vers -productVersion | cut -d . -f 1)"
+[[ "$MAJOR" -ge 27 ]] || { printf 'Bu yerel motor macOS 27 veya sonrası gerektirir.\n' >&2; exit 1; }
+if [[ ! -x "$RUNTIME/dist/bin/wine" ]]; then
+  FREE="$(df -k "$ROOT" | awk 'NR==2 {print $4}')"
+  [[ "$FREE" -gt 2500000 ]] || { printf 'Yerel motor kurulumu için en az 2,5 GB boş alan gerekir.\n' >&2; exit 1; }
+  mkdir -p "$ROOT/downloads" "$ROOT/runtime/native-arm64"
+  if [[ ! -f "$ARCHIVE" ]]; then
+    curl --fail --location --retry 2 --connect-timeout 20 --max-time 300 \
+      "https://github.com/Broyojo/hadron/releases/download/v$VERSION/Hadron-$VERSION.dmg" -o "$ARCHIVE.part"
+    mv "$ARCHIVE.part" "$ARCHIVE"
+  fi
+  ACTUAL="$(shasum -a 256 "$ARCHIVE" | cut -d ' ' -f 1)"
+  [[ "$ACTUAL" == "$EXPECTED" ]] || { printf 'Yerel motor paket doğrulaması başarısız.\n' >&2; exit 1; }
+  MOUNT="$(mktemp -d /private/tmp/myt-native-mount.XXXXXX)"
+  STAGE="$ROOT/runtime/native-arm64/.Hadron-$VERSION.stage.app"
+  cleanup() { hdiutil detach "$MOUNT" >/dev/null 2>&1 || true; rmdir "$MOUNT" 2>/dev/null || true; }
+  trap cleanup EXIT
+  hdiutil attach -readonly -nobrowse -mountpoint "$MOUNT" "$ARCHIVE" >/dev/null
+  codesign --verify --deep --strict "$MOUNT/Hadron.app"
+  [[ ! -e "$STAGE" ]] || { printf 'Önceki yarım kurulum klasörü var: %s\n' "$STAGE" >&2; exit 1; }
+  ditto "$MOUNT/Hadron.app" "$STAGE"
+  codesign --verify --deep --strict "$STAGE"
+  mv "$STAGE" "$APP"
+fi
+file "$RUNTIME/dist/bin/wine" | grep -q 'Mach-O 64-bit executable arm64'
+for DLL in libarm64ecfex.dll libwow64fex.dll winemetal.dll lsteamclient.dll; do
+  [[ -f "$RUNTIME/dist/lib/wine/aarch64-windows/$DLL" ]] || { printf 'Yerel motor bileşeni eksik: %s\n' "$DLL" >&2; exit 1; }
+done
+cmp "$RUNTIME/dist/lib/wine/aarch64-windows/libarm64ecfex.dll" "$RUNTIME/dist/lib/wine/aarch64-windows/xtajit64.dll"
+cmp "$RUNTIME/dist/lib/wine/aarch64-windows/libwow64fex.dll" "$RUNTIME/dist/lib/wine/aarch64-windows/xtajit.dll"
+codesign --verify --strict "$RUNTIME/dist/lib/wine/aarch64-unix/wine.app"
+# Stage only downstream launch scripts outside the signed upstream bundle.
+PATCH="$ROOT/Patches/hadron/0001-myt-isolated-runtime.patch"
+PATCH_HASH="$(shasum -a 256 "$PATCH" | cut -d ' ' -f 1)"
+BRIDGE="$ROOT/runtime/native-arm64/myt-runner-0.1.1-${PATCH_HASH:0:12}"
+if [[ ! -f "$BRIDGE/.patch-hash" ]] || [[ "$(cat "$BRIDGE/.patch-hash")" != "$PATCH_HASH" ]]; then
+  mkdir -p "$BRIDGE"
+  cp -R "$RUNTIME/scripts" "$BRIDGE/"
+  ln -sfn "$RUNTIME/dist" "$BRIDGE/dist"
+  ln -sfn "$RUNTIME/config" "$BRIDGE/config"
+  ln -sfn "$RUNTIME/licenses" "$BRIDGE/licenses"
+  cp "$RUNTIME/VERSION" "$BRIDGE/VERSION"
+  /usr/bin/patch --batch -p1 -d "$BRIDGE" -i "$PATCH"
+  printf '%s\n' "$PATCH_HASH" > "$BRIDGE/.patch-hash"
+fi
+ln -sfn "$BRIDGE" "$ROOT/runtime/native-arm64/myt-runner-current"
+# Keep upstream's entitled Wine loader and provisioning profile intact.
+# Nothing is injected into Steam.app; the compatibility runner is invoked directly.
+rm -f "$ARCHIVE"
+printf 'Yerel ARM64 Wine + FEX motoru hazır. Kurulum arşivi temizlendi.\n'

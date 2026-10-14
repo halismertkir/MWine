@@ -1,0 +1,38 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+APP="$ROOT/build/MWine.app"
+rm -rf "$APP"
+mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources" "$ROOT/build/module-cache"
+swiftc -parse-as-library -module-cache-path "$ROOT/build/module-cache" \
+  -O -target arm64-apple-macos14.0 "$ROOT/Sources/SteamDepot.swift" "$ROOT/Sources/SteamDownloader.swift" "$ROOT/Sources/Runtime.swift" "$ROOT/Sources/BoundedProcessLog.swift" "$ROOT/Sources/GameFiles.swift" "$ROOT/Sources/Workspace.swift" "$ROOT/Sources/MWine.swift" -o "$APP/Contents/MacOS/MWine"
+swiftc -parse-as-library -module-cache-path "$ROOT/build/module-cache" \
+  -O -target arm64-apple-macos14.0 "$ROOT/Sources/SteamDepot.swift" "$ROOT/Sources/SteamDownloader.swift" "$ROOT/Sources/GameFiles.swift" "$ROOT/Sources/DownloadCLI.swift" -o "$ROOT/build/mwine-download"
+swiftc -parse-as-library -module-cache-path "$ROOT/build/module-cache" \
+  -O -target arm64-apple-macos14.0 "$ROOT/Sources/MetalProbe.swift" -o "$ROOT/build/myt-metal-probe"
+PAYLOAD="$APP/Contents/Resources/payload"
+rm -rf "$PAYLOAD"
+mkdir -p "$PAYLOAD/scripts" "$PAYLOAD/Sources" "$APP/Contents/Helpers"
+for SCRIPT in native-game native-exe session-watchdog setup-native-arm64 restore-saves.py; do cp "$ROOT/scripts/$SCRIPT" "$PAYLOAD/scripts/"; done
+cp -R "$ROOT/Patches" "$ROOT/EngineConfig" "$PAYLOAD/"
+cp "$ROOT/Sources/GameHostInfo.plist" "$ROOT/Sources/WineHostInfo.plist" "$PAYLOAD/Sources/"
+cp "$ROOT/LICENSE" "$ROOT/NOTICE" "$ROOT/THIRD_PARTY_NOTICES.md" "$PAYLOAD/"
+cp "$ROOT/build/myt-metal-probe" "$APP/Contents/Helpers/mwine-metal-probe"
+rm -f "$APP/Contents/Resources/project-root.txt"
+cat > "$APP/Contents/Info.plist" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>org.mwine.launcher</string>
+<key>CFBundleName</key><string>MWine</string>
+<key>CFBundleExecutable</key><string>MWine</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleShortVersionString</key><string>0.5.0</string>
+<key>CFBundleVersion</key><string>5</string>
+<key>LSMinimumSystemVersion</key><string>14.0</string>
+<key>NSHighResolutionCapable</key><true/>
+</dict></plist>
+EOF
+codesign --force --sign - "$APP"
+printf 'Hazır: %s\n' "$APP"

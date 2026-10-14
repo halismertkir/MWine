@@ -1,0 +1,25 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+COMPILER="$ROOT/tools/llvm-mingw-20261006-ucrt-macos-universal/bin/x86_64-w64-mingw32-gcc"
+WRAPPER="$ROOT/build/steamwebhelper-mwine.exe"
+if [[ ! -f "$WRAPPER" || "$ROOT/Sources/steamwebhelper-launcher.c" -nt "$WRAPPER" ]]; then
+  [[ -x "$COMPILER" ]] || { printf 'Taşınabilir Windows derleyicisi eksik.\n' >&2; exit 1; }
+  "$COMPILER" -municode -mwindows -O2 -Wall -Wextra -static "$ROOT/Sources/steamwebhelper-launcher.c" -o "$WRAPPER"
+fi
+TARGET="$ROOT/bottles/steam/drive_c/Program Files (x86)/Steam/bin/cef/cef.win64/steamwebhelper.exe"
+ORIGINAL="${TARGET%.exe}.mwine-original.exe"
+[[ -f "$TARGET" ]] || { printf 'Steam güncellemesi henüz tamamlanmadı.\n' >&2; exit 1; }
+if ! cmp -s "$WRAPPER" "$TARGET"; then
+  # An older M Wine wrapper must never overwrite Valve's preserved binary.
+  if [[ "$(stat -f %z "$TARGET")" -ge 500000 ]]; then
+    cp "$TARGET" "$ORIGINAL"
+  fi
+  [[ -f "$ORIGINAL" && "$(stat -f %z "$ORIGINAL")" -ge 500000 ]] || {
+    printf 'Orijinal Valve yardımcı programı eksik; Steam dosya doğrulaması gerekiyor.\n' >&2; exit 1;
+  }
+  cp "$WRAPPER" "$TARGET"
+fi
+[[ -f "$ORIGINAL" && "$(stat -f %z "$ORIGINAL")" -ge 500000 ]] || { printf 'Orijinal Valve yardımcı programı bulunamadı.\n' >&2; exit 1; }
+printf 'Steam arayüzü için yerel Wine uyumluluk başlatıcısı hazır. Valve dosyası korundu.\n'

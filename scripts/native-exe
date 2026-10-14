@@ -1,0 +1,51 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# MWine standalone PE runner: no Steam identity or client is injected.
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+[[ $# -ge 1 && -f "$1" ]] || { printf 'Bir Windows .exe dosyası gerekiyor.\n' >&2; exit 2; }
+EXE="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+shift
+KEY="$(printf '%s' "$EXE" | shasum -a 256 | cut -c1-16)"
+RUNTIME="$(cd "$ROOT/runtime/native-arm64/myt-runner-current" && pwd -P)"
+export HADRON_DATA_ROOT="$ROOT/bottles/native-arm64/state"
+. "$RUNTIME/scripts/paths.sh"
+export WINEPREFIX="$ROOT/bottles/native-arm64/exe-$KEY/pfx"
+export USER=steamuser WINEDEBUG=-all FEX_DISKCACHE=1
+export DYLD_FALLBACK_LIBRARY_PATH="$RUNTIME/dist/mesa-zink/lib:$HADRON_LIBPATH"
+export VK_DRIVER_FILES="$RUNTIME/dist/mesa/share/vulkan/icd.d/kosmickrisp_mesa_icd.aarch64.json"
+export WINE_MAC_OPENGL=egl MESA_LOADER_DRIVER_OVERRIDE=zink
+export DRIRC_CONFIGDIR="$RUNTIME/dist/mesa-zink/share/drirc.d"
+export MESA_KK_EXPERIMENTAL=dgc,xfb,sparse
+export DXMT_SHADER_CACHE_PATH="$ROOT/runtime/cache/exe-$KEY/dxmt"
+export MESA_SHADER_CACHE_DIR="$ROOT/runtime/cache/exe-$KEY/mesa"
+export VKD3D_SHADER_CACHE_PATH="$ROOT/runtime/cache/exe-$KEY/vkd3d"
+mkdir -p "$WINEPREFIX" "$DXMT_SHADER_CACHE_PATH" "$MESA_SHADER_CACHE_DIR" "$VKD3D_SHADER_CACHE_PATH"
+WINE="$RUNTIME/dist/bin/wine"
+SERVER="$RUNTIME/dist/bin/wineserver"
+trap '"$SERVER" -k >/dev/null 2>&1 || true; exit 143' TERM INT HUP
+if [[ ! -f "$WINEPREFIX/.mwine-ready" ]]; then
+  WINEDLLOVERRIDES='mscoree,mshtml=' "$WINE" wineboot --init
+  "$SERVER" -w
+  "$RUNTIME/scripts/mtld3d-prefix" enable "$WINEPREFIX"
+  touch "$WINEPREFIX/.mwine-ready"
+fi
+for ENTRY in aarch64-windows:system32 i386-windows:syswow64; do
+  ARCH="${ENTRY%:*}" TARGET="$WINEPREFIX/drive_c/windows/${ENTRY#*:}"
+  [[ ! -f "$RUNTIME/dist/lib/wine/$ARCH/winemetal.dll" ]] || cp "$RUNTIME/dist/lib/wine/$ARCH/winemetal.dll" "$TARGET/winemetal.dll"
+done
+SYS32="$WINEPREFIX/drive_c/windows/system32"
+for DLL in d3d12.dll d3d12core.dll; do
+  cp "$RUNTIME/dist/vkd3d-proton/x64/$DLL" "$SYS32/$DLL"
+done
+cp "$RUNTIME/dist/dxvk/x64/dxgi.dll" "$SYS32/dxgi_dxvk.dll"
+export WINEDLLOVERRIDES='mscoree,mshtml=;d3d9=n,b;d3d12,d3d12core=n'
+cd "$(dirname "$EXE")"
+"$ROOT/scripts/session-watchdog" "$WINEPREFIX" $$ "$SERVER" &
+set +e
+"$WINE" "Z:$(printf '%s' "$EXE" | tr '/' '\\')" "$@" &
+wait $!
+GAME_STATUS=$?
+"$SERVER" -w &
+wait $!
+exit "$GAME_STATUS"

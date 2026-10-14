@@ -1,0 +1,65 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BASE="$ROOT/runtime/Wine Staging.app"
+APP="$ROOT/runtime/Wine DXMT.app"
+ENGINE="$APP/Contents/Resources/wine"
+PREFIX="$ROOT/bottles/megabonk"
+ARCHIVE="$ROOT/downloads/dxmt-fork-v1.tar.gz"
+EXPECTED=51043dd4cf585d52b1415c452052a0953dc01f9f9663ae0c3d6984907c25fab5
+TREE="$ROOT/runtime/dxmt/wine11-fork-v1"
+STAMP="$ENGINE/.myt-dxmt-v1"
+if [[ ! -x "$BASE/Contents/Resources/wine/bin/wine" ]]; then bash "$ROOT/scripts/setup-runtime"; fi
+mkdir -p "$ROOT/downloads" "$ROOT/logs/megabonk" "$ROOT/runtime/cache/megabonk"
+if [[ ! -f "$ARCHIVE" ]]; then
+  curl --fail --location --retry 2 --connect-timeout 20 --max-time 300 \
+    https://github.com/ramiabih/play-windows-steam-on-mac/releases/download/dxmt-fork-v1/dxmt-fork-macos-arm64.tar.gz \
+    -o "$ARCHIVE.part"
+  mv "$ARCHIVE.part" "$ARCHIVE"
+fi
+ACTUAL="$(shasum -a 256 "$ARCHIVE" | cut -d ' ' -f 1)"
+[[ "$ACTUAL" == "$EXPECTED" ]] || { printf 'DXMT paket doğrulaması başarısız.\n' >&2; exit 1; }
+if [[ ! -f "$STAMP" ]] || [[ "$(cat "$STAMP")" != "$EXPECTED" ]]; then
+  mkdir -p "$TREE"
+  tar -xzf "$ARCHIVE" -C "$TREE"
+  for FILE in x86_64-unix/winemetal.so x86_64-windows/d3d11.dll x86_64-windows/dxgi.dll x86_64-windows/winemetal.dll; do
+    [[ -f "$TREE/$FILE" ]] || { printf 'DXMT paketi eksik: %s\n' "$FILE" >&2; exit 1; }
+  done
+  # Dedicated engine: the working Vulkan engine and its prefix are never patched.
+  if [[ ! -x "$ENGINE/bin/wine" ]]; then cp -R "$BASE" "$APP"; fi
+  cp "$TREE/x86_64-unix/winemetal.so" "$ENGINE/lib/wine/x86_64-unix/winemetal.so"
+  for ARCH in x86_64-windows i386-windows; do
+    for DLL in dxgi d3d11 d3d10core winemetal; do
+      if [[ -f "$TREE/$ARCH/$DLL.dll" ]]; then cp "$TREE/$ARCH/$DLL.dll" "$ENGINE/lib/wine/$ARCH/$DLL.dll"; fi
+    done
+  done
+  printf '%s\n' "$EXPECTED" > "$STAMP"
+fi
+export WINEPREFIX="$PREFIX" WINEARCH=win64 WINEDEBUG=-all
+export WINEDLLOVERRIDES='dxgi,d3d11,d3d10core,winemetal=b'
+export PATH="$ENGINE/bin:$PATH"
+if [[ ! -f "$PREFIX/system.reg" ]]; then
+  "$ENGINE/bin/wine" wineboot -i
+  "$ENGINE/bin/wine" winecfg -v win10
+fi
+cp "$ENGINE/lib/wine/x86_64-windows/winemetal.dll" "$PREFIX/drive_c/windows/system32/winemetal.dll"
+HOST="$ROOT/build/Megabonk — MYT.app"
+mkdir -p "$HOST/Contents/MacOS"
+cp "$ENGINE/bin/wine" "$HOST/Contents/MacOS/wine"
+ln -sfn "$ENGINE/lib" "$HOST/Contents/lib"
+ln -sfn "$ENGINE/share" "$HOST/Contents/share"
+cat > "$HOST/Contents/Info.plist" <<'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+<key>CFBundleIdentifier</key><string>local.myt.megabonk</string>
+<key>CFBundleName</key><string>Megabonk — MYT</string>
+<key>CFBundleExecutable</key><string>wine</string>
+<key>CFBundlePackageType</key><string>APPL</string>
+<key>CFBundleVersion</key><string>1</string>
+<key>LSMinimumSystemVersion</key><string>14.0</string>
+</dict></plist>
+EOF
+codesign --force --sign - "$HOST"
+printf 'DirectX–Metal motoru ve ayrı Megabonk ortamı hazır.\n'

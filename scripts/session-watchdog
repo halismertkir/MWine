@@ -1,0 +1,23 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+# Stop only this prefix under critical memory/disk pressure. Never kill other Wine users.
+set -u
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+[[ $# == 3 && "$2" =~ ^[0-9]+$ ]] || exit 2
+PREFIX="$1" PID="$2" SERVER="$3"
+case "$PREFIX" in "$ROOT"/bottles/native-arm64/*/pfx) ;; *) exit 2 ;; esac
+BASE="$(sysctl -n vm.swapusage | sed -E 's/.*used = ([0-9.]+)M.*/\1/' | cut -d. -f1)"
+[[ "$BASE" =~ ^[0-9]+$ ]] || BASE=0
+while kill -0 "$PID" 2>/dev/null; do
+  PRESSURE="$(sysctl -n kern.memorystatus_vm_pressure_level 2>/dev/null)"
+  FREE="$(df -m "$ROOT" | awk 'NR == 2 { print $4 }')"
+  SWAP="$(sysctl -n vm.swapusage | sed -E 's/.*used = ([0-9.]+)M.*/\1/' | cut -d. -f1)"
+  [[ "$SWAP" =~ ^[0-9]+$ ]] || SWAP="$BASE"
+  [[ "$SWAP" -ge "$BASE" ]] || BASE="$SWAP"
+  if [[ "${PRESSURE:-0}" -ge 4 || "${FREE:-9999}" -lt 1024 || $((SWAP-BASE)) -gt 2048 ]]; then
+    printf 'MWine: bellek veya disk baskısı nedeniyle bu oyun ortamı durduruldu.\n' >&2
+    WINEPREFIX="$PREFIX" "$SERVER" -k >/dev/null 2>&1 || true
+    exit 1
+  fi
+  sleep 2
+done

@@ -1,0 +1,95 @@
+#!/bin/bash
+# SPDX-License-Identifier: Apache-2.0
+set -euo pipefail
+
+# Every operation uses this project's prefix, including wineserver shutdown.
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ENGINE="$ROOT/runtime/Wine Staging.app/Contents/Resources/wine"
+WINE="$ENGINE/bin/wine"
+export WINEPREFIX="$ROOT/bottles/steam"
+export WINEARCH=win64
+export WINEDEBUG="${MWINE_DEBUG:--all}"
+export PATH="$ENGINE/bin:$PATH"
+export VK_DRIVER_FILES="$ENGINE/lib/wine/x86_64-unix/vulkan/icd.d/MoltenVK_icd.json"
+export VK_ICD_FILENAMES="$VK_DRIVER_FILES"
+export MVK_CONFIG_LOG_LEVEL=1
+export MTL_HUD_ENABLED="${MWINE_HUD:-0}"
+STEAM="$WINEPREFIX/drive_c/Program Files (x86)/Steam/steam.exe"
+DEMO=5165210
+NATIVE_STEAM="$HOME/Library/Application Support/Steam"
+native_demo() {
+  local dir
+  for dir in "$NATIVE_STEAM/Steam.AppBundle/Steam/Contents/MacOS/steamapps/content/app_5165210/depot_5165211" "$NATIVE_STEAM/steamapps/content/app_5165210/depot_5165211"; do
+    if [[ -f "$dir/FindTheNeedle.exe" && -f "$dir/FindTheNeedle.pck" ]]; then
+      printf '%s\n' "$dir/FindTheNeedle.exe"
+      return 0
+    fi
+  done
+  return 1
+}
+
+fail() { printf '%s\n' "$*" >&2; exit 1; }
+need_engine() { [[ -x "$WINE" ]] || fail 'Wine bulunamadı. Önce scripts/setup-runtime çalıştırın.'; }
+need_steam() { need_engine; [[ -f "$STEAM" ]] || fail 'Önce Windows Steam kurulumunu tamamlayın.'; }
+launch_steam() {
+  need_steam
+  "$ROOT/scripts/patch-cef"
+  "$ROOT/scripts/repair-cef-after-launch" "$(date +%s)" > "$ROOT/logs/cef-repair.log" 2>&1 &
+  cd "$(dirname "$STEAM")"
+  # Software rendering is limited to Steam's browser UI; games retain Vulkan/Metal.
+  exec "$WINE" 'C:\Program Files (x86)\Steam\steam.exe' -no-cef-sandbox -cef-disable-gpu -cef-disable-gpu-compositing "$@"
+}
+init_prefix() {
+  need_engine
+  mkdir -p "$ROOT/bottles" "$ROOT/logs"
+  if [[ ! -f "$WINEPREFIX/system.reg" ]]; then
+    "$WINE" wineboot -i
+  fi
+  "$WINE" winecfg -v win10
+  "$WINE" cmd /c ver
+}
+
+case "${1:-help}" in
+  status)
+    need_engine
+    "$WINE" --version
+    [[ -f "$WINEPREFIX/system.reg" ]] && printf 'Windows ortamı hazır.\n' || printf 'Windows ortamı henüz oluşturulmadı.\n'
+    [[ -f "$STEAM" ]] && printf 'Windows Steam kurulu.\n' || printf 'Windows Steam henüz kurulmadı.\n'
+    printf 'Hedef: Find The Needle Demo (%s). Grafik yolu: Wine → Vulkan → MoltenVK → Metal.\n' "$DEMO"
+    ;;
+  init) init_prefix ;;
+  install-steam)
+    init_prefix
+    [[ -f "$ROOT/downloads/SteamSetup.exe" ]] || fail 'Resmi SteamSetup.exe eksik; scripts/setup-runtime çalıştırın.'
+    if [[ ! -f "$STEAM" ]]; then
+      "$WINE" "$ROOT/downloads/SteamSetup.exe" /S
+    fi
+    [[ -f "$STEAM" ]] || fail 'Steam kurulumu tamamlanmadı; logs klasörüne bakın.'
+    printf 'Windows Steam kuruldu. Steam’i açıp kendi hesabınızla giriş yapın.\n'
+    ;;
+  steam) launch_steam ;;
+  install-demo) launch_steam -applaunch "$DEMO" ;;
+  play-demo)
+    if GAME="$(native_demo)"; then
+      need_engine
+      cd "$(dirname "$GAME")"
+      exec "$WINE" "$GAME"
+    fi
+    launch_steam -applaunch "$DEMO"
+    ;;
+  downloads) launch_steam steam://open/downloads ;;
+  store) launch_steam "steam://store/$DEMO" ;;
+  run)
+    need_engine
+    shift
+    [[ $# -ge 1 ]] || fail 'Bir Windows .exe dosyası seçin.'
+    [[ -f "$1" ]] || fail 'Seçilen .exe bulunamadı.'
+    EXE="$(cd "$(dirname "$1")" && pwd)/$(basename "$1")"
+    shift
+    cd "$(dirname "$EXE")"
+    exec "$WINE" "$EXE" "$@"
+    ;;
+  stop) need_engine; exec "$ENGINE/bin/wineserver" -k ;;
+  help) printf 'M Wine: status | init | install-steam | steam | install-demo | play-demo | run /absolute/game.exe [args] | stop\n' ;;
+  *) fail 'Bilinmeyen işlem. Kullanım için scripts/mwine help çalıştırın.' ;;
+esac
