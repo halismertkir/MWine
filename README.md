@@ -1,15 +1,53 @@
+<p align="center">
+  <img src="docs/assets/mwine-banner.svg" alt="MWine — Wine, FEX ve Metal ile Apple Silicon üzerinde Windows oyunları" width="100%">
+</p>
+
+<p align="center">
+  <a href="https://github.com/halismertkir/MWine/actions/workflows/ci.yml"><img src="https://github.com/halismertkir/MWine/actions/workflows/ci.yml/badge.svg" alt="macOS test ve derleme durumu"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-bbeb5c?labelColor=192326" alt="Apache 2.0 lisansı"></a>
+  <img src="https://img.shields.io/badge/platform-Apple%20Silicon-90cfea?labelColor=192326" alt="Apple Silicon">
+  <img src="https://img.shields.io/badge/runtime-macOS%2027%2B-90cfea?labelColor=192326" alt="Yerel motor için macOS 27 veya sonrası">
+  <img src="https://img.shields.io/badge/status-experimental-e7bc6b?labelColor=192326" alt="Deneysel sürüm">
+</p>
+
+<p align="center">
+  <a href="#hızlı-başlangıç">Hızlı başlangıç</a> ·
+  <a href="#mimari">Mimari</a> ·
+  <a href="#uyumluluk-ve-testlerin-sınırı">Uyumluluk</a> ·
+  <a href="CONTRIBUTING.md">Katkı</a> ·
+  <a href="mailto:contact@halismertkir.com">İletişim</a>
+</p>
+
 # MWine
 
 **Windows oyunlarını Apple Silicon Mac üzerinde çalıştırmak için açık kaynaklı,
 genel amaçlı, deneysel bir uyumluluk başlatıcısı.**
 
-MWine 0.5, iki oyunla sınırlı prototipin yerine Steam App ID / mağaza bağlantısıyla
-oyun eklemeyi ve bağımsız Windows `.exe` dosyalarını çalıştırmayı destekler.
-Uygulama başka klasöre taşınabilir; kaynak kodun bulunduğu klasöre bağlı değildir.
+Steam mağaza bağlantısıyla oyun ekleyin, Windows paketlerini kendi Mac Steam
+hesabınızla indirin ve ayrı bir Windows ortamında başlatın. Steam dışı programlar
+için kendi `.exe` dosyanızı da seçebilirsiniz. Uygulama kaynak proje klasörüne
+bağlı olmadan taşınabilir.
 
-**Bu sürüm bütün Steam oyunlarıyla uyumluluk veya Windows ile aynı FPS garantisi
-vermez.** Çeviri motoru Hadron ve onun Wine/FEX/Metal bileşenlerine dayanır.
-MWine yeni bir DirectX sürücüsü veya sıfır maliyetli bir Intel çeviricisi değildir.
+> [!IMPORTANT]
+> **0.5.0 deneysel sürümdür.** Bütün oyunlarla uyumluluk veya Windows ile aynı FPS
+> garanti edilmez. Yerel yol Rosetta kullanmaz; FEX Intel oyun kodunu çevirir.
+> macOS 27+ gerekir. Henüz notarize edilmiş bir binary release bulunmuyor.
+
+## Uygulama ekranı
+
+<p align="center">
+  <img src="docs/assets/mwine-library.png" alt="MWine 0.5.0: oyun kütüphanesi, Steam bağlantısıyla ekleme, ayrı EXE başlatma ve yerel ARM64 motor durumu" width="100%">
+</p>
+
+*Gerçek MWine 0.5.0 arayüzü. Görsel, oyun performansı veya uyumluluk sonucu değildir.*
+
+| Ne yapar? | Nasıl? |
+| --- | --- |
+| Oyun ekler | Steam App ID, mağaza bağlantısı veya yerel `.exe` |
+| Windows paketini indirir | Mac Steam konsolu; kendi hesabınız ve oyun lisansınız |
+| Oyunları ayrı tutar | Oyun başına Windows ortamı, shader/JIT cache ve oturum kayıtları |
+| Kaynakları korur | En fazla 8 MiB oturum çıktısı; kritik baskıda yalnızca ilgili prefix durdurulur |
+| Taşınabilir çalışır | Uygulama kaynakları bundle içinde; veriler Application Support altında |
 
 ## Gereksinimler
 
@@ -24,7 +62,9 @@ MWine yeni bir DirectX sürücüsü veya sıfır maliyetli bir Intel çeviricisi
   1,1 GB. Her yeni Windows ortamı yaklaşık 1 GB ek alan kullanabilir.
   Oyunlar, shader/JIT önbellekleri ve birleşen paketler ayrıca yer kaplar.
 
-## Derleme ve kullanım
+## Hızlı başlangıç
+
+![Motor kurulumu, Mac Steam oturumu, oyun ekleme ve indirme adımları](docs/assets/quick-start.svg)
 
 ```sh
 git clone https://github.com/halismertkir/MWine.git
@@ -75,7 +115,21 @@ Komut satırıyla indirme (bu araç checkout altında çalışır):
 ./build/mwine-download 5165210
 ```
 
-## Motor ve performans
+## Mimari
+
+![MWine yönetim katmanı, FEX ve ARM64 Wine çalışma motoru, CPU ve GPU yolları](docs/assets/architecture.svg)
+
+**MWine başlatma ve kurulum katmanıdır.** Steam metadata/depot işlemlerini,
+motor doğrulamasını, izole ortamları ve oturum kayıtlarını yönetir. Windows API,
+Intel kodu ve grafik çevirisini Hadron'un mevcut bileşenleri gerçekleştirir.
+Yeni bir DirectX sürücüsü veya sıfır maliyetli Intel çeviricisi geliştirdiği
+iddiasında bulunmaz.
+
+### Grafik yolları
+
+![DirectX 9, DirectX 10/11, DirectX 12, Vulkan ve OpenGL'den Metal'e uzanan yollar](docs/assets/graphics-paths.svg)
+
+### Motor ve performans
 
 | Katman | Kullanılan bileşen |
 | --- | --- |
@@ -160,3 +214,14 @@ geçerlidir. Valve dosyaları Valve sunucularından alınır, açık kaynak lisa
 çevrilmez. MWine Valve/Apple/Hadron'un resmi ürünü değildir.
 
 Katkılar için [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Sorun bildirme ve iletişim
+
+Hata bildirirken [GitHub Issues](https://github.com/halismertkir/MWine/issues)
+kullanın. MWine sürümünü, macOS sürümünü, Apple çipini, oyunun App ID'sini ve
+kişisel bilgilerden arındırılmış kısa bir oturum kaydını ekleyin.
+
+**İletişim:** [contact@halismertkir.com](mailto:contact@halismertkir.com).
+Güvenlik sorunlarını public issue yerine bu adrese bildirin; gerçek API
+anahtarlarını, hesap tokenlarını veya şifreleri örnek olarak göndermeyin.
+[Repo veri ve güvenlik kapsamı](SECURITY.md).

@@ -9,7 +9,7 @@ spec.loader.exec_module(module)
 with tempfile.TemporaryDirectory() as folder:
     project = Path(folder)
     prefix = project / "new-prefix"
-    relative = "bottles/steam/drive_c/users/mert/AppData/Roaming/Godot/app_userdata/Haystack Incremental"
+    relative = "bottles/steam/drive_c/users/fixture-user/AppData/Roaming/Godot/app_userdata/Haystack Incremental"
     source = project / "preserved-data/2026-10-11" / relative
     (source / "saves").mkdir(parents=True)
     (source / "saves/slot.json").write_text("preserved")

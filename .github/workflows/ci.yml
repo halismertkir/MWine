@@ -10,6 +10,10 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Secret scan (history and staged source)
+        run: ./scripts/check-secrets
       - name: Offline tests
         run: ./scripts/test
       - name: Build portable launcher

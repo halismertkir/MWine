@@ -1,0 +1,68 @@
+<?xml version="1.0" ?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="788" viewBox="0 0 1200 788" role="img" aria-labelledby="title desc">
+  <title id="title">MWine mimarisi</title>
+  <desc id="desc">Mac Steam oyun depolarını indirir. MWine izole ortamları hazırlar. FEX Intel kodunu, Wine Windows API çağrılarını çevirir. Grafik bileşenleri Metal üzerinden GPU kullanır.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10Z" fill="#bbeb5c"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="788" rx="24" fill="#101719"/>
+  <g font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">
+    <text x="46" y="54" font-size="27" fill="#edf2ef" font-weight="750">MWINE MİMARİSİ</text>
+    <text x="46" y="88" font-size="17" fill="#a9b9b8" font-weight="400">Başlatıcı, işlemci çevirisi ve grafik çevirisi ayrı katmanlardır.</text>
+    <text x="46" y="132" font-size="14" fill="#bbeb5c" font-weight="650">01 / MWINE YÖNETİM KATMANI</text>
+    <rect x="46" y="155" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="171" width="4" height="52" rx="2" fill="#bbeb5c"/>
+    <text x="66" y="189" font-size="20" fill="#edf2ef" font-weight="650">Mac Steam</text>
+    <text x="66" y="217" font-size="15" fill="#a9b9b8" font-weight="400">Kendi hesabı • metadata • Windows depoları</text>
+    <rect x="434" y="155" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="434" y="171" width="4" height="52" rx="2" fill="#bbeb5c"/>
+    <text x="454" y="189" font-size="20" fill="#edf2ef" font-weight="650">MWine arayüzü</text>
+    <text x="454" y="217" font-size="15" fill="#a9b9b8" font-weight="400">Steam App ID veya bağımsız .exe</text>
+    <rect x="822" y="155" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="822" y="171" width="4" height="52" rx="2" fill="#bbeb5c"/>
+    <text x="842" y="189" font-size="20" fill="#edf2ef" font-weight="650">Yerel veri alanı</text>
+    <text x="842" y="217" font-size="15" fill="#a9b9b8" font-weight="400">Motor • ayrı prefix • cache • sınırlı log</text>
+    <path d="M378 197 H432" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M766 197 H820" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M600 239 V284" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="362" y="286" width="476" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="362" y="302" width="4" height="52" rx="2" fill="#90cfea"/>
+    <text x="382" y="320" font-size="20" fill="#edf2ef" font-weight="650">Windows oyunu / x86 veya x64</text>
+    <text x="382" y="348" font-size="15" fill="#a9b9b8" font-weight="400">Oyun dosyaları lisanslı kaynaktan gelir</text>
+    <text x="46" y="416" font-size="14" fill="#90cfea" font-weight="650">02 / HADRON ÇALIŞMA MOTORU</text>
+    <rect x="46" y="441" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="457" width="4" height="52" rx="2" fill="#90cfea"/>
+    <text x="66" y="475" font-size="20" fill="#edf2ef" font-weight="650">FEX</text>
+    <text x="66" y="503" font-size="15" fill="#a9b9b8" font-weight="400">Intel oyun kodu → ARM64 kodu</text>
+    <rect x="434" y="441" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="434" y="457" width="4" height="52" rx="2" fill="#90cfea"/>
+    <text x="454" y="475" font-size="20" fill="#edf2ef" font-weight="650">Yerel ARM64 Wine</text>
+    <text x="454" y="503" font-size="15" fill="#a9b9b8" font-weight="400">Windows API çağrıları → macOS</text>
+    <rect x="822" y="441" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="822" y="457" width="4" height="52" rx="2" fill="#90cfea"/>
+    <text x="842" y="475" font-size="20" fill="#edf2ef" font-weight="650">Grafik bileşenleri</text>
+    <text x="842" y="503" font-size="15" fill="#a9b9b8" font-weight="400">DirectX / Vulkan / OpenGL çevirisi</text>
+    <path d="M500 370 V394 H406 V428 H212 V438" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M600 370 V438" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M700 370 V394 H988 V438" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M212 525 V570" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="46" y="572" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="588" width="4" height="52" rx="2" fill="#bbeb5c"/>
+    <text x="66" y="606" font-size="20" fill="#edf2ef" font-weight="650">Apple Silicon CPU</text>
+    <text x="66" y="634" font-size="15" fill="#a9b9b8" font-weight="400">Çeviri maliyeti devam eder; Rosetta yok</text>
+    <path d="M600 525 V570" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="434" y="572" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="434" y="588" width="4" height="52" rx="2" fill="#bbeb5c"/>
+    <text x="454" y="606" font-size="20" fill="#edf2ef" font-weight="650">macOS servisleri</text>
+    <text x="454" y="634" font-size="15" fill="#a9b9b8" font-weight="400">Pencere • giriş • dosya sistemi • ses</text>
+    <path d="M988 525 V570" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="822" y="572" width="332" height="84" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="822" y="588" width="4" height="52" rx="2" fill="#bbeb5c"/>
+    <text x="842" y="606" font-size="20" fill="#edf2ef" font-weight="650">Metal → Apple Silicon GPU</text>
+    <text x="842" y="634" font-size="15" fill="#a9b9b8" font-weight="400">Grafik yolları aşağıdaki şemada</text>
+    <text x="46" y="716" font-size="16" fill="#a9b9b8" font-weight="400">MWine: kurulum ve oturum yönetimi. Hadron: mevcut Wine / FEX / grafik motoru.</text>
+    <text x="46" y="750" font-size="16" fill="#a9b9b8" font-weight="400">İndirme ve başlatma bir oyuna ait DRM veya anti-cheat koşullarını kaldırmaz.</text>
+  </g>
+</svg>

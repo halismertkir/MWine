@@ -7,7 +7,7 @@ if [[ ! -x "$ENGINE/bin/wine" ]]; then bash "$ROOT/scripts/setup-runtime"; fi
 export WINEPREFIX="$ROOT/bottles/steam" WINEARCH=win64 WINEDEBUG=-all
 mkdir -p "$WINEPREFIX"
 if [[ ! -f "$WINEPREFIX/system.reg" ]]; then "$ENGINE/bin/wine" wineboot -i; fi
-python3 "$ROOT/scripts/restore-saves.py" "$ROOT" 5165210 "$WINEPREFIX" "${USER:-mert}"
+python3 "$ROOT/scripts/restore-saves.py" "$ROOT" 5165210 "$WINEPREFIX" "${USER:-steamuser}"
 HOST="$ROOT/build/Find The Needle — MYT.app"
 mkdir -p "$HOST/Contents/MacOS"
 cp "$ENGINE/bin/wine" "$HOST/Contents/MacOS/wine"

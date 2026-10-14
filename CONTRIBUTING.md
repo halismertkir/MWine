@@ -1,7 +1,8 @@
 # Contributing to MWine
 
 Run `./scripts/test` and `./scripts/build-app` on an Apple Silicon Mac before
-submitting a change. CI exercises the offline source build, not macOS 27's
+submitting a change. Stage the intended files and run `./scripts/check-secrets`
+before publication; it also checks Git history. CI exercises the offline source build, not macOS 27's
 entitled game runtime. Keep downloaded engines, games, account files, save
 games, personal paths and diagnostic captures out of commits.
 

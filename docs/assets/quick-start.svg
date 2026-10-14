@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="352" viewBox="0 0 1200 352" role="img" aria-labelledby="title desc">
+  <title id="title">MWine hızlı başlangıç akışı</title>
+  <desc id="desc">Motoru kurun, Mac Steam hesabınıza giriş yapın, App ID veya mağaza bağlantısıyla oyun ekleyin, Windows paketini indirip oyunu açın.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10Z" fill="#bbeb5c"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="352" rx="24" fill="#101719"/>
+  <g font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">
+    <text x="46" y="54" font-size="27" fill="#edf2ef" font-weight="750">İLK OYUNUNU BAŞLAT</text>
+    <text x="46" y="86" font-size="17" fill="#a9b9b8" font-weight="400">Steam akışı • oyun hesabı Mac Steam üzerinde kalır</text>
+    <text x="46" y="148" font-size="30" fill="#bbeb5c" font-weight="750">01</text>
+    <rect x="46" y="170" width="244" height="92" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="186" width="4" height="60" rx="2" fill="#bbeb5c"/>
+    <text x="66" y="204" font-size="20" fill="#edf2ef" font-weight="650">Motoru kur</text>
+    <text x="66" y="232" font-size="15" fill="#a9b9b8" font-weight="400">Sabit sürüm + hash kontrolü</text>
+    <path d="M290 216 H329" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="334" y="148" font-size="30" fill="#bbeb5c" font-weight="750">02</text>
+    <rect x="334" y="170" width="244" height="92" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="334" y="186" width="4" height="60" rx="2" fill="#bbeb5c"/>
+    <text x="354" y="204" font-size="20" fill="#edf2ef" font-weight="650">Steam’e giriş yap</text>
+    <text x="354" y="232" font-size="15" fill="#a9b9b8" font-weight="400">Kendi hesabını kullan</text>
+    <path d="M578 216 H617" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="622" y="148" font-size="30" fill="#bbeb5c" font-weight="750">03</text>
+    <rect x="622" y="170" width="244" height="92" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="622" y="186" width="4" height="60" rx="2" fill="#bbeb5c"/>
+    <text x="642" y="204" font-size="20" fill="#edf2ef" font-weight="650">Oyunu ekle</text>
+    <text x="642" y="232" font-size="15" fill="#a9b9b8" font-weight="400">App ID veya mağaza bağlantısı</text>
+    <path d="M866 216 H905" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="910" y="148" font-size="30" fill="#bbeb5c" font-weight="750">04</text>
+    <rect x="910" y="170" width="244" height="92" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="910" y="186" width="4" height="60" rx="2" fill="#bbeb5c"/>
+    <text x="930" y="204" font-size="20" fill="#edf2ef" font-weight="650">İndir ve aç</text>
+    <text x="930" y="232" font-size="15" fill="#a9b9b8" font-weight="400">Durumu MWine takip eder</text>
+    <text x="46" y="312" font-size="17" fill="#a9b9b8" font-weight="400">Mevcut dosyalar için .exe bağla. Steam dışı programlar için Bağımsız .exe aç.</text>
+  </g>
+</svg>

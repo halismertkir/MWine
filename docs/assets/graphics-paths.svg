@@ -1,0 +1,87 @@
+<?xml version="1.0" ?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="770" viewBox="0 0 1200 770" role="img" aria-labelledby="title desc">
+  <title id="title">DirectX, Vulkan ve OpenGL grafik çevirisi</title>
+  <desc id="desc">DirectX 9 mtld3d, DirectX 10/11 DXMT üzerinden Metal kullanır. DirectX 12 vkd3d-proton, Vulkan winevulkan, OpenGL Zink üzerinden KosmicKrisp ve Metal kullanır.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10Z" fill="#bbeb5c"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="770" rx="24" fill="#101719"/>
+  <g font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">
+    <text x="46" y="54" font-size="27" fill="#edf2ef" font-weight="750">GRAFİK ÇEVİRİ YOLLARI</text>
+    <text x="46" y="87" font-size="17" fill="#a9b9b8" font-weight="400">Hadron v0.1.1 içindeki bileşenler • her yol ayrı uyumluluk testi gerektirir</text>
+    <rect x="46" y="125" width="286" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="141" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="66" y="159" font-size="20" fill="#edf2ef" font-weight="650">DirectX 9</text>
+    <text x="66" y="187" font-size="15" fill="#a9b9b8" font-weight="400">Windows oyununun grafik çağrıları</text>
+    <rect x="387" y="125" width="328" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="387" y="141" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="407" y="159" font-size="20" fill="#edf2ef" font-weight="650">mtld3d</text>
+    <text x="407" y="187" font-size="15" fill="#a9b9b8" font-weight="400">Uyumluluk motorundaki bileşen</text>
+    <rect x="772" y="125" width="382" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="772" y="141" width="4" height="48" rx="2" fill="#bbeb5c"/>
+    <text x="792" y="159" font-size="20" fill="#edf2ef" font-weight="650">Metal</text>
+    <text x="792" y="187" font-size="15" fill="#a9b9b8" font-weight="400">Apple Silicon GPU</text>
+    <path d="M332 165H385" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M715 165H770" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="46" y="232" width="286" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="248" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="66" y="266" font-size="20" fill="#edf2ef" font-weight="650">DirectX 10 / 11</text>
+    <text x="66" y="294" font-size="15" fill="#a9b9b8" font-weight="400">Windows oyununun grafik çağrıları</text>
+    <rect x="387" y="232" width="328" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="387" y="248" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="407" y="266" font-size="20" fill="#edf2ef" font-weight="650">DXMT</text>
+    <text x="407" y="294" font-size="15" fill="#a9b9b8" font-weight="400">Uyumluluk motorundaki bileşen</text>
+    <rect x="772" y="232" width="382" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="772" y="248" width="4" height="48" rx="2" fill="#bbeb5c"/>
+    <text x="792" y="266" font-size="20" fill="#edf2ef" font-weight="650">Metal</text>
+    <text x="792" y="294" font-size="15" fill="#a9b9b8" font-weight="400">Apple Silicon GPU</text>
+    <path d="M332 272H385" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M715 272H770" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="46" y="339" width="286" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="355" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="66" y="373" font-size="20" fill="#edf2ef" font-weight="650">DirectX 12</text>
+    <text x="66" y="401" font-size="15" fill="#a9b9b8" font-weight="400">Windows oyununun grafik çağrıları</text>
+    <rect x="387" y="339" width="328" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="387" y="355" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="407" y="373" font-size="20" fill="#edf2ef" font-weight="650">vkd3d-proton</text>
+    <text x="407" y="401" font-size="15" fill="#a9b9b8" font-weight="400">Uyumluluk motorundaki bileşen</text>
+    <rect x="772" y="339" width="382" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="772" y="355" width="4" height="48" rx="2" fill="#bbeb5c"/>
+    <text x="792" y="373" font-size="20" fill="#edf2ef" font-weight="650">KosmicKrisp → Metal</text>
+    <text x="792" y="401" font-size="15" fill="#a9b9b8" font-weight="400">Apple Silicon GPU</text>
+    <path d="M332 379H385" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M715 379H770" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="46" y="446" width="286" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="462" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="66" y="480" font-size="20" fill="#edf2ef" font-weight="650">Vulkan</text>
+    <text x="66" y="508" font-size="15" fill="#a9b9b8" font-weight="400">Windows oyununun grafik çağrıları</text>
+    <rect x="387" y="446" width="328" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="387" y="462" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="407" y="480" font-size="20" fill="#edf2ef" font-weight="650">winevulkan</text>
+    <text x="407" y="508" font-size="15" fill="#a9b9b8" font-weight="400">Uyumluluk motorundaki bileşen</text>
+    <rect x="772" y="446" width="382" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="772" y="462" width="4" height="48" rx="2" fill="#bbeb5c"/>
+    <text x="792" y="480" font-size="20" fill="#edf2ef" font-weight="650">KosmicKrisp → Metal</text>
+    <text x="792" y="508" font-size="15" fill="#a9b9b8" font-weight="400">Apple Silicon GPU</text>
+    <path d="M332 486H385" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M715 486H770" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <rect x="46" y="553" width="286" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="46" y="569" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="66" y="587" font-size="20" fill="#edf2ef" font-weight="650">OpenGL</text>
+    <text x="66" y="615" font-size="15" fill="#a9b9b8" font-weight="400">Windows oyununun grafik çağrıları</text>
+    <rect x="387" y="553" width="328" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="387" y="569" width="4" height="48" rx="2" fill="#90cfea"/>
+    <text x="407" y="587" font-size="20" fill="#edf2ef" font-weight="650">Zink (Vulkan)</text>
+    <text x="407" y="615" font-size="15" fill="#a9b9b8" font-weight="400">Uyumluluk motorundaki bileşen</text>
+    <rect x="772" y="553" width="382" height="80" rx="12" fill="#192326" stroke="#354449"/>
+    <rect x="772" y="569" width="4" height="48" rx="2" fill="#bbeb5c"/>
+    <text x="792" y="587" font-size="20" fill="#edf2ef" font-weight="650">KosmicKrisp → Metal</text>
+    <text x="792" y="615" font-size="15" fill="#a9b9b8" font-weight="400">Apple Silicon GPU</text>
+    <path d="M332 593H385" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <path d="M715 593H770" fill="none" stroke="#bbeb5c" stroke-width="2" marker-end="url(#arrow)"/>
+    <text x="46" y="698" font-size="16" fill="#a9b9b8" font-weight="400">Doğrudan Metal yolu, otomatik olarak daha yüksek FPS veya tam uyumluluk anlamına gelmez.</text>
+    <text x="46" y="731" font-size="16" fill="#bbeb5c" font-weight="400">Bu çizim mimariyi anlatır; oyun benchmark sonucu değildir.</text>
+  </g>
+</svg>
